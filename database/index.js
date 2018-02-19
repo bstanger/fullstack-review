@@ -19,26 +19,34 @@ let save = (gitResponse) => {
   console.log("in Save function of db index.js");
 
   gitResponse.forEach(function(repo){
-    let newRepo = new Repo({
-      title: repo.name,
-      url: repo.url,
-      creator: repo.owner.login,
-      forksCount: repo.forks
-    });
-    console.log('newRepo ', newRepo);
-    Repos.findOneAndUpdate(
-      {url: repo.url},
-      newRepo,
-      {upsert: true, new: true},
-      function (err, doc) {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log(doc);
-        }
+    Repo.findOne({ "url": repo.url }, function(err, doc){
+      if(!doc){
+        let newRepo = new Repo({
+          title: repo.name,
+          url: repo.url,
+          creator: repo.owner.login,
+          forksCount: repo.forks
+        });
+        newRepo.save(function(err){
+          if(err) console.log(err);
+        });
       }
-    )
-
+    });
+    // Repo.find({ "url": repo.url }).upsert().updateOne({
+    //   "$setOnInsert": {"title": repo.name, "url": repo.url, "creator": repo.owner.login, "forksCount": repo.forks}
+    // });
+    // Repo.findOneAndUpdate(
+    //   {url: repo.url},
+    //   newRepo,
+    //   {upsert: true, new: true},
+    //   function (err, doc) {
+    //     if (err) {
+    //       console.log(err);
+    //     } else {
+    //       console.log(doc);
+    //     }
+    //   }
+    // )
   })
 }
 
